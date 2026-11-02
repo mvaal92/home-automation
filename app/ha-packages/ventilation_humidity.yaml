@@ -1,0 +1,327 @@
+# GENERERT av ha-packages/ventilation/build.py fra zones.yaml – ikke rediger for hånd.
+input_boolean:
+  ventilasjon_bad_auto:
+    name: 'Bad: automatisk ventilasjon'
+    icon: mdi:fan-auto
+input_number:
+  ventilasjon_bad_min_humidity:
+    name: 'Bad: startfukt'
+    min: 30
+    max: 95
+    step: 1
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:water-percent
+  ventilasjon_bad_max_humidity:
+    name: 'Bad: maksfukt'
+    min: 40
+    max: 100
+    step: 1
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:water-percent-alert
+  ventilasjon_bad_min_speed:
+    name: 'Bad: minste fart'
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:fan-speed-1
+  ventilasjon_bad_max_speed:
+    name: 'Bad: største fart'
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:fan-speed-3
+  ventilasjon_bad_baseline_offset:
+    name: 'Bad: over grunnlinje'
+    min: 0
+    max: 25
+    step: 1
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:delta
+  ventilasjon_bad_night_cap:
+    name: 'Bad: nattgrense'
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:weather-night
+  ventilasjon_bad_fart:
+    name: 'Bad: satt viftefart'
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:fan
+input_select:
+  ventilasjon_bad_overstyring:
+    name: 'Bad: overstyring'
+    options:
+    - auto
+    - boost
+    - pause
+    icon: mdi:hand-back-right
+timer:
+  ventilasjon_bad_overstyring:
+    name: 'Bad: overstyring nedtelling'
+    restore: true
+    icon: mdi:timer-outline
+sensor:
+- platform: statistics
+  name: Ventilasjon bad grunnlinje
+  unique_id: ventilasjon_bad_grunnlinje
+  entity_id: sensor.spisestue_aqara_temperature_and_humidity_sensor_t1_humidity
+  state_characteristic: percentile
+  percentile: 20
+  max_age:
+    hours: 2
+  sampling_size: 2000
+  precision: 1
+- platform: statistics
+  name: Ventilasjon bad fukt glattet
+  unique_id: ventilasjon_bad_fukt_glattet
+  entity_id: sensor.spisestue_aqara_temperature_and_humidity_sensor_t1_humidity
+  state_characteristic: average_step
+  max_age:
+    minutes: 5
+  keep_last_sample: true
+  sampling_size: 200
+  precision: 1
+template:
+- triggers:
+  - trigger: time_pattern
+    minutes: /1
+  - trigger: homeassistant
+    event: start
+  - trigger: state
+    entity_id:
+    - sensor.spisestue_aqara_temperature_and_humidity_sensor_t1_humidity
+    - sensor.ventilasjon_bad_fukt_glattet
+    - sensor.ventilasjon_bad_grunnlinje
+    - input_boolean.ventilasjon_bad_auto
+    - input_select.ventilasjon_bad_overstyring
+    - input_number.ventilasjon_bad_fart
+    - input_number.ventilasjon_bad_min_humidity
+    - input_number.ventilasjon_bad_max_humidity
+    - input_number.ventilasjon_bad_min_speed
+    - input_number.ventilasjon_bad_max_speed
+    - input_number.ventilasjon_bad_baseline_offset
+    - input_number.ventilasjon_bad_night_cap
+  actions:
+  - variables:
+      v: |-
+        {%- set raw = states('sensor.spisestue_aqara_temperature_and_humidity_sensor_t1_humidity') | float(none) -%}
+        {%- set sm = states('sensor.ventilasjon_bad_fukt_glattet') | float(raw) -%}
+        {%- set h = sm if sm is not none else raw -%}
+        {%- set base = states('sensor.ventilasjon_bad_grunnlinje') | float(h) -%}
+        {%- set mnh = states('input_number.ventilasjon_bad_min_humidity') | float(55) -%}
+        {%- set mxh = states('input_number.ventilasjon_bad_max_humidity') | float(75) -%}
+        {%- set mns = states('input_number.ventilasjon_bad_min_speed') | float(30) -%}
+        {%- set mxs = [states('input_number.ventilasjon_bad_max_speed') | float(80), mns] | max -%}
+        {%- set off = states('input_number.ventilasjon_bad_baseline_offset') | float(5) -%}
+        {%- set cap = states('input_number.ventilasjon_bad_night_cap') | float(45) -%}
+        {%- set lo = [mnh, (base + off) if base is not none else mnh] | max -%}
+        {%- set hi = [mxh, lo + 5] | max -%}
+        {%- set t = now().strftime('%H:%M') -%}
+        {%- set night = (t >= '23:00' or t < '07:00') if '23:00' > '07:00' else ('23:00' <= t < '07:00') -%}
+        {%- set ov = states('input_select.ventilasjon_bad_overstyring') -%}
+        {%- set auto = is_state('input_boolean.ventilasjon_bad_auto', 'on') -%}
+        {%- set last = states('input_number.ventilasjon_bad_fart') | int(0) -%}
+        {%- if h is none -%}{%- set frac, sp, mode = 0, mns, 'sensorfeil' -%}
+        {%- else -%}
+          {%- set frac = [[(h - lo) / (hi - lo), 0] | max, 1] | min -%}
+          {%- set sp = mns + (mxs - mns) * frac -%}
+          {%- set mode = 'grunn' if frac <= 0 else ('maks' if frac >= 1 else 'okt') -%}
+          {%- if night and h < hi and sp > cap -%}{%- set sp, mode = [cap, mns] | max, 'natt' -%}{%- endif -%}
+        {%- endif -%}
+        {%- set sp = ((sp / 5) | round(0) * 5) | int -%}
+        {%- if ov == 'boost' -%}{%- set sp, mode = 90, 'boost' -%}
+        {%- elif ov == 'pause' -%}{%- set sp, mode = 0, 'pause' -%}
+        {%- elif not auto -%}{%- set sp, mode = ((mns / 5) | round(0) * 5) | int, 'fast' -%}{%- endif -%}
+        {{ {'speed': sp, 'mode': mode, 'humidity': raw, 'smoothed': sm, 'baseline': base, 'start': lo | round(1), 'full': hi | round(1),
+           'fraction': frac | round(2), 'night': night} }}
+  sensor:
+  - name: Ventilasjon Bad
+    unique_id: ventilasjon_bad
+    default_entity_id: sensor.ventilasjon_bad
+    unit_of_measurement: '%'
+    icon: mdi:fan
+    state: '{{ v.speed }}'
+    attributes:
+      ventilation_zone: '{{ true }}'
+      zone: |-
+        {{ "bad" }}
+      name: |-
+        {{ "Bad" }}
+      driver: |-
+        {{ "ecovent_manual" }}
+      boost_minutes: |-
+        {{ 30 }}
+      pause_minutes: |-
+        {{ 30 }}
+      night_start: |-
+        {{ "23:00" }}
+      night_end: |-
+        {{ "07:00" }}
+      hold_minutes: |-
+        {{ 5 }}
+      baseline_hours: |-
+        {{ 2 }}
+      boost_speed: |-
+        {{ 90 }}
+      step: |-
+        {{ 5 }}
+      humidity_sensor_note: |-
+        {{ "" }}
+      mode: '{{ v.mode }}'
+      humidity: '{{ v.humidity }}'
+      humidity_smoothed: '{{ v.smoothed }}'
+      baseline: '{{ v.baseline }}'
+      start_humidity: '{{ v.start }}'
+      full_humidity: '{{ v.full }}'
+      fraction: '{{ v.fraction }}'
+      night: '{{ v.night }}'
+      override: '{{ states(''input_select.ventilasjon_bad_overstyring'') }}'
+      override_ends: '{{ state_attr(''timer.ventilasjon_bad_overstyring'', ''finishes_at'') if is_state(''timer.ventilasjon_bad_overstyring'', ''active'') else none }}'
+      auto: '{{ is_state(''input_boolean.ventilasjon_bad_auto'', ''on'') }}'
+      last_set: '{{ states(''input_number.ventilasjon_bad_fart'') | int(0) }}'
+      rpm: '{{ states(''sensor.bodo_supreme_bodo_supreme_fan_1_speed'') | int(none) }}'
+      curve: |-
+        {{ {'min_humidity': states('input_number.ventilasjon_bad_min_humidity') | float(none), 'max_humidity': states('input_number.ventilasjon_bad_max_humidity') | float(none), 'min_speed': states('input_number.ventilasjon_bad_min_speed') | float(none), 'max_speed': states('input_number.ventilasjon_bad_max_speed') | float(none), 'baseline_offset': states('input_number.ventilasjon_bad_baseline_offset') | float(none), 'night_cap': states('input_number.ventilasjon_bad_night_cap') | float(none)} }}
+      entities: |-
+        {{ {"status": "sensor.ventilasjon_bad", "baseline": "sensor.ventilasjon_bad_grunnlinje", "smooth": "sensor.ventilasjon_bad_fukt_glattet", "auto": "input_boolean.ventilasjon_bad_auto", "override": "input_select.ventilasjon_bad_overstyring", "timer": "timer.ventilasjon_bad_overstyring", "speed": "input_number.ventilasjon_bad_fart", "min_humidity": "input_number.ventilasjon_bad_min_humidity", "max_humidity": "input_number.ventilasjon_bad_max_humidity", "min_speed": "input_number.ventilasjon_bad_min_speed", "max_speed": "input_number.ventilasjon_bad_max_speed", "baseline_offset": "input_number.ventilasjon_bad_baseline_offset", "night_cap": "input_number.ventilasjon_bad_night_cap", "humidity_sensor": "sensor.spisestue_aqara_temperature_and_humidity_sensor_t1_humidity", "rpm": "sensor.bodo_supreme_bodo_supreme_fan_1_speed", "automation": "automation.ventilasjon_bad_fuktstyrt_viftefart"} }}
+automation:
+- id: ventilasjon_bad
+  alias: 'Ventilasjon Bad: fuktstyrt viftefart'
+  description: Generert fra ha-packages/ventilation/zones.yaml (sone bad). Proporsjonal fuktkurve, natt-tak, overstyring.
+  mode: queued
+  max: 3
+  max_exceeded: silent
+  triggers:
+  - trigger: time_pattern
+    minutes: /1
+    id: tick
+  - trigger: state
+    entity_id: sensor.ventilasjon_bad
+    id: change
+  - trigger: state
+    entity_id: input_select.ventilasjon_bad_overstyring
+    id: override
+  - trigger: state
+    entity_id: input_boolean.ventilasjon_bad_auto
+    id: override
+  - trigger: time_pattern
+    minutes: /30
+    id: reassert
+  - trigger: homeassistant
+    event: start
+    id: reassert
+  variables:
+    target: '{{ states(''sensor.ventilasjon_bad'') | int(-1) }}'
+    mode: '{{ state_attr(''sensor.ventilasjon_bad'', ''mode'') }}'
+    last: '{{ states(''input_number.ventilasjon_bad_fart'') | int(-1) }}'
+    age_min: '{{ ((now() - states[''input_number.ventilasjon_bad_fart''].last_changed).total_seconds() / 60) if states[''input_number.ventilasjon_bad_fart''] is not none else 999 }}'
+    write: |-
+      {%- if target < 0 or mode in [none, 'unknown'] -%}false
+      {%- elif trigger.id in ['reassert', 'override'] -%}true
+      {%- elif trigger.id == 'change' and trigger.from_state is not none and trigger.from_state.attributes.mode in ['boost', 'pause', 'fast'] and target != last -%}true
+      {%- elif target == last -%}false
+      {%- elif mode in ['boost', 'pause'] or target > last -%}true
+      {%- else -%}{{ age_min >= 5 }}{%- endif -%}
+  conditions:
+  - condition: template
+    value_template: '{{ write }}'
+  actions:
+  - action: shell_command.ventilasjon_ecovent
+    data:
+      entry: bodo_supreme
+      speed: '{{ target }}'
+    response_variable: res
+    continue_on_error: true
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.ventilasjon_bad_fart
+    data:
+      value: '{{ target }}'
+  - action: logbook.log
+    data:
+      name: Ventilasjon Bad
+      entity_id: sensor.ventilasjon_bad
+      message: '{{ ''satt til '' ~ target ~ '' % ('' ~ mode ~ '', '' ~ trigger.id ~ '')'' ~ (('' – feil: '' ~ res.stdout) if res is defined and res.returncode != 0 else '''') }}'
+- id: ventilasjon_bad_overstyring_ferdig
+  alias: 'Ventilasjon Bad: overstyring ferdig'
+  mode: single
+  triggers:
+  - trigger: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.ventilasjon_bad_overstyring
+  actions:
+  - action: input_select.select_option
+    target:
+      entity_id: input_select.ventilasjon_bad_overstyring
+    data:
+      option: auto
+shell_command:
+  ventilasjon_ecovent: python3 /config/ventilation/ecovent_speed.py {{ entry | regex_replace('[^a-z0-9_]', '') }} {{ speed | int }}
+script:
+  ventilasjon_overstyr:
+    alias: 'Ventilasjon: overstyr sone'
+    icon: mdi:fan-clock
+    mode: parallel
+    description: Boost eller pause en ventilasjonssone i N minutter, eller tilbake til auto.
+    fields:
+      zone:
+        description: sone-id, f.eks. bad
+        required: true
+        selector:
+          text: null
+      kind:
+        description: boost | pause | auto
+        required: true
+        selector:
+          select:
+            options:
+            - boost
+            - pause
+            - auto
+      minutes:
+        description: varighet i minutter (boost/pause)
+        selector:
+          number:
+            min: 1
+            max: 240
+    sequence:
+    - variables:
+        z: '{{ zone | regex_replace(''[^a-z0-9_]'', '''') }}'
+        mins: '{{ (minutes | default(state_attr(''sensor.ventilasjon_'' ~ (zone | regex_replace(''[^a-z0-9_]'', '''')), kind ~ ''_minutes''), true) | default(30, true)) | int(30) }}'
+    - condition: template
+      value_template: '{{ states(''input_select.ventilasjon_'' ~ z ~ ''_overstyring'') not in [''unknown'', ''unavailable''] }}'
+    - if:
+      - condition: template
+        value_template: '{{ kind == ''auto'' }}'
+      then:
+      - action: timer.cancel
+        target:
+          entity_id: timer.ventilasjon_{{ z }}_overstyring
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.ventilasjon_{{ z }}_auto
+      else:
+      - action: timer.start
+        target:
+          entity_id: timer.ventilasjon_{{ z }}_overstyring
+        data:
+          duration: '{{ ''%02d:%02d:00'' % (mins // 60, mins % 60) }}'
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.ventilasjon_{{ z }}_overstyring
+      data:
+        option: '{{ kind }}'

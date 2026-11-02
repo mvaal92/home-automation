@@ -1,0 +1,5 @@
+[Unit]
+Description=Sync HA-managed SmartThings OAuth token (durable, auto-refresh)
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /home/owner/home-automation/tools/st_token_sync.py

@@ -1,0 +1,7 @@
+[Unit]
+Description=Home standby sync every 5 min
+[Timer]
+OnBootSec=2m
+OnUnitActiveSec=5m
+[Install]
+WantedBy=timers.target

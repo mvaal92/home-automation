@@ -1,0 +1,6 @@
+[Unit]
+Description=Hjem presence tracker (LAN/Tailscale -> HA device_tracker)
+[Service]
+Type=oneshot
+Environment=HOME_HA_TOKEN_FILE=/home/owner/home-automation/secrets/ha_token
+ExecStart=/usr/bin/python3 /home/owner/home-automation/app/scripts/presence_tracker.py

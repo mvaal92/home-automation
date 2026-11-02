@@ -1,0 +1,70 @@
+{
+ "devices": {
+  "fcec3436-3a53-4485-82fb-9c97c327bcab": "Taklampe Spisebord",
+  "57ef40d6-5487-4bf8-ad53-944756383f27": "Zigbee Switch 2",
+  "94190430-15e5-4cf7-8626-3f953922eaeb": "Zigbee Switch 1",
+  "88092ad9-0f24-40a2-b2c4-31d46502ebed": "Zigbee Dimmer 1",
+  "1b819296-ca91-41b4-acf9-01d243d559de": "Zigbee Thing",
+  "35bdcc64-ed29-492c-a640-261322a7bea4": "Taklampe Bod liten",
+  "8c3cd221-ee42-4db4-9b81-a8d2cf653881": "Light Sensor - 55\" The Frame",
+  "0e65d893-8fa4-4838-b745-e059a4bbffc0": "Sound Sensor - 55\" The Frame",
+  "8fd89ab8-49fb-d2ac-fdc3-d1ea7e57e8bd": "55\" The Frame",
+  "6b60ff42-162d-42f9-9dd7-aa35124f1aca": "Hub - 55\" The Frame",
+  "ac31f238-7eeb-4faf-b4ef-e1183272c0e9": "Bordlampe Høy",
+  "fdcf8912-1655-458c-9e12-b2468799af9a": "Gulvlampe Stue",
+  "8b67cd6a-f8ac-4418-8b0b-b892c81dc882": "Gulvlampe Stue",
+  "d387394a-e776-40ab-8218-c116d76e695e": "Ceiling",
+  "c5daf981-3119-62a7-02f4-2ac9c35e0ea5": "Washer",
+  "a5e7f34b-1c8c-4db2-9860-79bd27950aa5": "Lys Kaffestasjon",
+  "00ce1a4f-d86d-41b8-a218-de7a9781a612": "Lys Skap Kjøkken",
+  "4a58fda2-d13f-43cc-9308-705cd5da1524": "Lys Under Overkap",
+  "9a87afcb-5670-41db-81ed-b5185f364614": "(Beta) ELKO Smart ZB Termostat",
+  "2f2aa8ef-0d28-4cca-8506-54f9ab5f3353": "ELKO One Thermostat",
+  "c766e37d-7de7-473f-b529-700ac6c6bf42": "Termostat Stue Kjøkken",
+  "ebaa1ea2-0d99-4f0d-8277-f4112178e7bf": "Aqara Temperature and Humidity Sensor T1",
+  "6b0667c0-caf6-4870-abca-230f885c7801": "TV Lys",
+  "1d67af27-7c32-40cd-b53c-78a2582c24b7": "Sonos Kjøkken",
+  "ef2f0548-3598-41fd-8afc-5b8a92fa303c": "Sonos Kjøkken",
+  "9dc69db8-dc7a-467b-9863-6334afca78c7": "Taklampe Sikringskap",
+  "22e7be60-baab-49d5-9be5-1694561a7a96": "Gulvlampe HovedSoverom",
+  "e7cf03a2-8ea9-4b6d-9e0d-ce8ab87de459": "Samsung TV",
+  "a12788e7-1a76-45f2-9e2b-1b298757a0c2": "Ingangsparti 2",
+  "50a92e56-db36-4e0e-9e6f-b6629d343fb3": "Taklampe Tekniskrom",
+  "01898089-aa9b-4a71-a0f4-130e9ff4c2ef": "Taklys gjesterom",
+  "2405c59f-7f46-4e81-9b25-d62788c3db6d": "Utelys Inngang"
+ },
+ "rooms": {
+  "bcc3d024-c9b7-4b4f-82dc-29d892638cc5": {
+   "locationId": "d1da71c3-e35c-477e-a87d-748089185efe",
+   "name": "TV stue"
+  },
+  "a688b3e0-5a1c-45c6-996a-0ca6a5cbfb98": {
+   "locationId": "d1da71c3-e35c-477e-a87d-748089185efe",
+   "name": "Laundry room"
+  },
+  "e98bf444-7cb3-41ef-8a15-553d17496875": {
+   "locationId": "d1da71c3-e35c-477e-a87d-748089185efe",
+   "name": "Media room"
+  },
+  "cfbb6714-974a-4f7b-852a-b81d1cd7ac1a": {
+   "locationId": "d1da71c3-e35c-477e-a87d-748089185efe",
+   "name": "Bathroom"
+  },
+  "8809b9e7-9cbe-4fb9-b320-7b0e4a042081": {
+   "locationId": "d1da71c3-e35c-477e-a87d-748089185efe",
+   "name": "Bedroom 1"
+  },
+  "fb5a9148-9da5-41b9-8941-b180192687d9": {
+   "locationId": "d1da71c3-e35c-477e-a87d-748089185efe",
+   "name": "Basement"
+  },
+  "96ae3c3a-8c8e-475b-bd04-5a3a0d01c087": {
+   "locationId": "d1da71c3-e35c-477e-a87d-748089185efe",
+   "name": "Front door"
+  },
+  "3e9dfe0e-c28e-49d5-a184-e218d69f0c4d": {
+   "locationId": "d1da71c3-e35c-477e-a87d-748089185efe",
+   "name": "Inngangspart"
+  }
+ }
+}

@@ -1,0 +1,17 @@
+node_modules/
+dist/
+dist-electron/
+release/
+out/
+*.log
+.env
+.env.*
+coverage/
+apps/ios/ios/App/App/public/
+apps/ios/ios/App/Pods/
+# personal data kept out of git (live copies stay on disk)
+scripts/*.undo.json
+scripts/rename_plan.json
+scripts/ha-tidy.mjs
+family.json
+!.env.example

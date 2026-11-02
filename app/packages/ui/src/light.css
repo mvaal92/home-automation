@@ -1,0 +1,27 @@
+/* Light theme polish (phone-first): AA text contrast, semantic "ink" colours for text/icons,
+   visible card edges, larger hit areas on touch. Applies to OS light (Auto) and Settings → Lys. */
+@media (prefers-color-scheme: light) { :root:not([data-theme=dark]) {
+  --fg-2: #505057; --fg-3: #6a6a71;
+  --line: rgba(0, 0, 0, 0.09); --line-2: rgba(0, 0, 0, 0.15);
+  --bg: #f4f4f2; --bg-2: #ffffff; --bg-3: #ebebe8;
+  --accent-fg: #1a1205;
+  --accent-ink: #965400; --warm-ink: #965400; --warn-ink: #7a4d00; --bad-ink: #a81e23; --good-ink: #157347; --cool-ink: #1d62c0;
+  --shadow: 0 1px 2px rgba(16,16,20,.06), 0 16px 40px -20px rgba(16,16,20,.22);
+} }
+:root[data-theme=light] {
+  --fg-2: #505057; --fg-3: #6a6a71;
+  --line: rgba(0, 0, 0, 0.09); --line-2: rgba(0, 0, 0, 0.15);
+  --bg: #f4f4f2; --bg-2: #ffffff; --bg-3: #ebebe8;
+  --accent-fg: #1a1205;
+  --accent-ink: #965400; --warm-ink: #965400; --warn-ink: #7a4d00; --bad-ink: #a81e23; --good-ink: #157347; --cool-ink: #1d62c0;
+  --shadow: 0 1px 2px rgba(16,16,20,.06), 0 16px 40px -20px rgba(16,16,20,.22);
+}
+/* Touch: grow the hit area to ≥44px without changing the look */
+@media (pointer: coarse) {
+  .icon-btn, .chip, .btn.sm, .collapse-btn, .section-action, .link-btn, .health-x, button.link, .check, .dot, .seg > button, a.ext-link { position: relative; }
+  .icon-btn::before, .chip::before, .btn.sm::before, .collapse-btn::before, .section-action::before, .link-btn::before, .health-x::before, button.link::before, .check::before, .dot::before, .seg > button::before, a.ext-link::before {
+    content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: max(100%, 44px); translate: -50% -50%; }
+}
+/* light-only readability tweaks */
+@media (prefers-color-scheme: light) { :root:not([data-theme=dark]) .sug-note, :root:not([data-theme=dark]) .pill-item { opacity: 1; } }
+:root[data-theme=light] .sug-note { opacity: 1; }

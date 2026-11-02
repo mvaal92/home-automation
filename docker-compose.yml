@@ -1,0 +1,30 @@
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Oslo
+    volumes:
+      - ./ha-config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+
+  whisper:
+    container_name: wyoming-whisper
+    image: rhasspy/wyoming-whisper:latest
+    network_mode: host
+    restart: unless-stopped
+    command: --model base-int8 --language en --uri tcp://0.0.0.0:10300 --data-dir /data
+    volumes:
+      - ./voice-data/whisper:/data
+
+  piper:
+    container_name: wyoming-piper
+    image: rhasspy/wyoming-piper:latest
+    network_mode: host
+    restart: unless-stopped
+    command: --voice en_US-lessac-medium --uri tcp://0.0.0.0:10200 --data-dir /data
+    volumes:
+      - ./voice-data/piper:/data

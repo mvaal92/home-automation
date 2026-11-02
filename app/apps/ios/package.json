@@ -1,0 +1,19 @@
+{
+  "name": "@home/ios",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "sync": "pnpm --filter @home/ui build && cap sync ios",
+    "add:ios": "cap add ios",
+    "open": "cap open ios",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.4.3",
+    "@capacitor/ios": "^7.4.3",
+    "capacitor-secure-storage-plugin": "^0.13.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.3"
+  }
+}

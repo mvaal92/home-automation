@@ -1,0 +1,8 @@
+[Unit]
+Description=Export Home sources to GitHub (redact + gitleaks + personal-string check, push only if clean)
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/owner/home-automation/tools/home-repo-sync.sh
+Nice=10

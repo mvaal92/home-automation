@@ -1,0 +1,40 @@
+# Fuktstyrt ventilasjon – én blokk per sone.
+# Etter endring:  python3 ha-packages/ventilation/build.py --deploy   (fra app/)
+#
+# Kurve (proporsjonal): viftefart går lineært fra min_speed ved «startfukt» til max_speed ved «maksfukt».
+#   startfukt = max(min_humidity, grunnlinje + baseline_offset)   (grunnlinje = 20-persentil siste baseline_hours)
+#   maksfukt  = max(max_humidity, startfukt + 5)
+# Natt (night_start–night_end): farten kappes til night_cap, med mindre fukta er over maksfukt.
+# Verdiene under er startverdier; de kan endres i appen (Luft) eller via MCP uten ny build.
+zones:
+  bad:
+    name: Bad
+    # BYTT SENSOR HER (én linje). Aqara T1 står på badet (område «Bad» i HA). Entitets-ID-en beholder «spisestue» fra paringen.
+    humidity_sensor: sensor.spisestue_aqara_temperature_and_humidity_sensor_t1_humidity
+    fan:
+      driver: ecovent_manual          # ecovent_manual (Bodo Supreme / Vents Arc, UDP manuell fart) | fan (fan.set_percentage)
+      entry: bodo_supreme             # ecovent_v2-oppføringens navn (slug), brukes av ecovent_manual
+      rpm_sensor: sensor.bodo_supreme_bodo_supreme_fan_1_speed
+      device_humidity_sensor: sensor.bodo_supreme_bodo_supreme_humidity
+    curve:
+      min_humidity: 55
+      max_humidity: 75
+      min_speed: 30                   # % (30 ≈ 480 rpm, stille grunnventilasjon)
+      max_speed: 80                   # % (80 ≈ 2500 rpm)
+      baseline_offset: 5
+      night_cap: 45
+      step: 5                         # fart rundes til nærmeste 5 %
+    baseline_hours: 2
+    night_start: "23:00"
+    night_end: "07:00"
+    hold_minutes: 5                   # minste tid før farten senkes igjen (hysterese)
+    boost_speed: 90
+    boost_minutes: 30
+    pause_minutes: 30
+
+# Eksempel – ny sone (kopier, endre og kjør build):
+#  vaskerom:
+#    name: Vaskerom
+#    humidity_sensor: sensor.vaskerom_fukt
+#    fan: { driver: fan, entity: fan.vaskerom_vifte }
+#    curve: { min_humidity: 55, max_humidity: 75, min_speed: 20, max_speed: 80, baseline_offset: 5, night_cap: 40, step: 5 }

@@ -1,0 +1,5 @@
+{
+  "owner": "Ola",
+  "kindergarten": { "id": "kid1", "name": "Kari", "fullName": "Kari Nordmann", "institution": "Eksempel barnehage", "group": "Avdeling A" },
+  "school": { "id": "kid2", "name": "Per", "fullName": "Per Nordmann", "school": "Eksempel skole", "municipality": "Kommune", "level": "2" }
+}

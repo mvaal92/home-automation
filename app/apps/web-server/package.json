@@ -1,0 +1,16 @@
+{
+  "name": "@home/web-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Serves the @home/ui production build and a same-origin Home Assistant proxy (/ha) for tailnet clients.",
+  "scripts": {
+    "start": "node server.mjs",
+    "typecheck": "true",
+    "test": "node --test --test-force-exit test/"
+  },
+  "dependencies": {
+    "node-html-parser": "^9.0.4",
+    "ws": "^8.18.3"
+  }
+}

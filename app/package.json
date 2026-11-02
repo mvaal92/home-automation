@@ -1,0 +1,25 @@
+{
+  "name": "home",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @home/ui dev",
+    "dev:mock": "VITE_HOME_MOCK=1 pnpm --filter @home/ui dev",
+    "build:web": "pnpm --filter @home/ui build",
+    "desktop:dev": "pnpm --filter @home/desktop dev",
+    "desktop:build": "pnpm --filter @home/desktop dist",
+    "ios:sync": "pnpm --filter @home/ios sync",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint .",
+    "test": "pnpm --filter @home/core --filter @home/mcp test",
+    "mcp:live-test": "pnpm --filter @home/mcp test:live"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "eslint": "^9.37.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.4.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.0"
+  }
+}

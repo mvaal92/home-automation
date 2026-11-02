@@ -1,0 +1,21 @@
+[Unit]
+Description=Home web app + Home Assistant proxy (Tailscale :8124)
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/owner/home-automation/app/apps/web-server
+ExecStart=/home/owner/.local/share/vite-plus/js_runtime/node/24.21.0/bin/node /home/owner/home-automation/app/apps/web-server/server.mjs
+Environment=HOME_PORT=8124
+Environment=HOME_BIND=100.64.0.1,127.0.0.1
+Environment=HOME_PREVIEW_HOST=100.64.0.1
+Environment=HOME_PROXY_TRUSTED_LOCAL=100.64.0.1
+Environment=HOME_HA_TOKEN_FILE=/home/owner/home-automation/secrets/ha_token
+# Retry until the Tailscale IP exists after boot
+Restart=always
+RestartSec=5
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target

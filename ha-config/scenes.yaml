@@ -1,0 +1,197 @@
+- id: morning
+  name: Morning
+  entities:
+    light.kjokken_taklamper_kjokken_1:
+      state: 'on'
+      brightness: 178
+    light.kjokken_lys_under_overkap:
+      state: 'on'
+      brightness: 204
+      color_temp_kelvin: 3500
+    light.kjokken_lys_kaffestasjon:
+      state: 'on'
+      brightness: 204
+      color_temp_kelvin: 3500
+    light.kjokken_lys_skap_kjokken:
+      state: 'on'
+      brightness: 153
+      color_temp_kelvin: 3500
+    light.kjokken_bordlampe:
+      state: 'on'
+      brightness: 128
+    light.spisestue_taklampe_spisebord:
+      state: 'on'
+      brightness: 153
+    light.spisestue_bordlampe_hoy:
+      state: 'on'
+      brightness: 102
+    light.wiz_dimmable_white_d7a578:
+      state: 'on'
+      brightness: 153
+    light.wiz_dimmable_white_d71508:
+      state: 'on'
+      brightness: 153
+  icon: mdi:weather-sunset-up
+- id: evening
+  name: Evening
+  entities:
+    light.kjokken_taklamper_kjokken_1:
+      state: 'on'
+      brightness: 89
+    light.kjokken_lys_under_overkap:
+      state: 'on'
+      brightness: 128
+      color_temp_kelvin: 2700
+    light.kjokken_lys_kaffestasjon:
+      state: 'on'
+      brightness: 102
+      color_temp_kelvin: 2700
+    light.kjokken_lys_skap_kjokken:
+      state: 'on'
+      brightness: 89
+      color_temp_kelvin: 2700
+    light.kjokken_bordlampe:
+      state: 'on'
+      brightness: 153
+    light.spisestue_taklampe_spisebord:
+      state: 'on'
+      brightness: 102
+    light.spisestue_bordlampe_hoy:
+      state: 'on'
+      brightness: 153
+    light.tv_stue_tv_lys:
+      state: 'on'
+      brightness: 128
+      color_temp_kelvin: 2700
+    light.wiz_dimmable_white_d7a578:
+      state: 'on'
+      brightness: 102
+    light.wiz_dimmable_white_d71508:
+      state: 'on'
+      brightness: 102
+  icon: mdi:weather-sunset-down
+- id: movie_night
+  name: Movie night
+  entities:
+    light.kjokken_taklamper_kjokken_1:
+      state: 'off'
+    light.kjokken_lys_under_overkap:
+      state: 'on'
+      brightness: 26
+      color_temp_kelvin: 2200
+    light.kjokken_lys_kaffestasjon:
+      state: 'off'
+    light.kjokken_lys_skap_kjokken:
+      state: 'off'
+    light.kjokken_bordlampe:
+      state: 'off'
+    light.spisestue_taklampe_spisebord:
+      state: 'off'
+    light.spisestue_bordlampe_hoy:
+      state: 'on'
+      brightness: 38
+    light.tv_stue_tv_lys:
+      state: 'on'
+      brightness: 38
+      color_temp_kelvin: 2200
+  icon: mdi:movie-open
+- id: dinner
+  name: Dinner
+  entities:
+    light.spisestue_taklampe_spisebord:
+      state: 'on'
+      brightness: 140
+    light.spisestue_bordlampe_hoy:
+      state: 'on'
+      brightness: 115
+    light.kjokken_taklamper_kjokken_1:
+      state: 'on'
+      brightness: 51
+    light.kjokken_lys_under_overkap:
+      state: 'on'
+      brightness: 102
+      color_temp_kelvin: 2700
+    light.kjokken_lys_kaffestasjon:
+      state: 'on'
+      brightness: 64
+      color_temp_kelvin: 2700
+    light.kjokken_lys_skap_kjokken:
+      state: 'off'
+    light.kjokken_bordlampe:
+      state: 'on'
+      brightness: 102
+    light.tv_stue_tv_lys:
+      state: 'on'
+      brightness: 51
+      color_temp_kelvin: 2400
+  icon: mdi:silverware-fork-knife
+- id: good_night
+  name: Good night
+  entities:
+    light.kjokken_taklamper_kjokken_1:
+      state: 'off'
+    light.kjokken_lys_under_overkap:
+      state: 'off'
+    light.kjokken_lys_kaffestasjon:
+      state: 'off'
+    light.kjokken_lys_skap_kjokken:
+      state: 'off'
+    light.kjokken_bordlampe:
+      state: 'off'
+    light.spisestue_taklampe_spisebord:
+      state: 'off'
+    light.spisestue_bordlampe_hoy:
+      state: 'off'
+    light.tv_stue_tv_lys:
+      state: 'off'
+    light.wiz_dimmable_white_d7a578:
+      state: 'off'
+    light.wiz_dimmable_white_d71508:
+      state: 'off'
+    light.wiz_dimmable_white_be230e:
+      state: 'off'
+    light.wiz_dimmable_white_57a6b2:
+      state: 'off'
+    light.wiz_dimmable_white_be20c0:
+      state: 'off'
+    light.wiz_dimmable_white_be271c:
+      state: 'off'
+  icon: mdi:weather-night
+- id: away
+  name: Away
+  entities:
+    light.kjokken_taklamper_kjokken_1:
+      state: 'off'
+    light.kjokken_lys_under_overkap:
+      state: 'off'
+    light.kjokken_lys_kaffestasjon:
+      state: 'off'
+    light.kjokken_lys_skap_kjokken:
+      state: 'off'
+    light.kjokken_bordlampe:
+      state: 'off'
+    light.spisestue_taklampe_spisebord:
+      state: 'off'
+    light.spisestue_bordlampe_hoy:
+      state: 'off'
+    light.tv_stue_tv_lys:
+      state: 'off'
+    light.wiz_dimmable_white_d7a578:
+      state: 'off'
+    light.wiz_dimmable_white_d71508:
+      state: 'off'
+    light.wiz_dimmable_white_be230e:
+      state: 'off'
+    light.wiz_dimmable_white_57a6b2:
+      state: 'off'
+    light.wiz_dimmable_white_be20c0:
+      state: 'off'
+    light.wiz_dimmable_white_be271c:
+      state: 'off'
+    light.gjesterom_taklys_gjesterom:
+      state: 'off'
+    light.wiz_tunable_white_362476:
+      state: 'off'
+    light.kid1_zigbee_dimmer_1:
+      state: 'off'
+  icon: mdi:home-export-outline

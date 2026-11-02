@@ -1,0 +1,59 @@
+# --- secrets & credentials (never commit) ---
+secrets/
+**/secrets/
+*.pat
+*_pat
+*token*.json
+*.token
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+id_rsa*
+oda_session*
+*session*.json
+cookies*
+ha-config/secrets.yaml
+secrets.yaml
+grok-assistant/.grok/config.toml
+**/.grok/config.toml
+# --- personal / runtime data ---
+data/
+**/data/
+*.db
+*.db-*
+*.sqlite*
+home.db*
+*.log
+*.log.*
+*.fault
+mykid/
+**/photos/
+# --- Home Assistant runtime ---
+ha-config/.storage/
+ha-config/deps/
+ha-config/tts/
+ha-config/custom_components/
+ha-config/.cloud/
+ha-config/home-assistant*
+voice-data/
+# --- screenshots (may show kids, notes, photos) ---
+screenshots/
+**/screenshots/
+home-shots/
+*.mp4
+*.gif
+# --- build & deps ---
+node_modules/
+dist/
+dist-electron/
+release/
+out/
+coverage/
+__pycache__/
+*.pyc
+.DS_Store
+apps/ios/ios/App/App/public/
+apps/ios/ios/App/Pods/

@@ -1,0 +1,8 @@
+[Unit]
+Description=Renew Tailscale HTTPS cert for Home web (:8444, tailnet only)
+[Service]
+Type=oneshot
+WorkingDirectory=/home/owner/home-automation/secrets/tls
+ExecStart=/usr/bin/tailscale cert --cert-file omarchy.crt --key-file omarchy.key home.example.com
+ExecStartPost=/usr/bin/chmod 600 omarchy.crt omarchy.key
+ExecStartPost=/usr/bin/systemctl --user restart home-web

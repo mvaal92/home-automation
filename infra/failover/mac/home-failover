@@ -1,0 +1,80 @@
+#!/bin/bash
+# home-failover activate|deactivate|status|ha-start|ha-stop|watchdog   (Mac mini standby)
+set -uo pipefail
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+S=$HOME/home-standby; ST=$S/state; mkdir -p "$ST"; chmod 700 "$S"
+P=100.64.0.1; UIDN=$(id -u); D=gui/$UIDN
+log(){ echo "$(date '+%F %T') $*" | tee -a "$S/failover.log"; }
+notify(){ log "NOTIFY: $*"; osascript -e "display notification "$*" with title "Home failover"" >/dev/null 2>&1 || true; }
+web_up(){ curl -fsS -m 4 "http://$P:8124/healthz" >/dev/null 2>&1; }
+ha_up(){ c=$(curl -s -o /dev/null -w '%{http_code}' -m 4 "http://$P:8123/api/" 2>/dev/null); [ "$c" = 401 ] || [ "$c" = 200 ]; }
+job(){ launchctl print "$D/$1" >/dev/null 2>&1; }
+start_job(){ job "$1" && launchctl kickstart -k "$D/$1" || launchctl bootstrap "$D" "$HOME/Library/LaunchAgents/$1.plist"; }
+stop_job(){ job "$1" && launchctl bootout "$D/$1" 2>/dev/null; true; }
+ha_upstream(){ if [ -f "$ST/HA_FAILOVER" ]; then echo http://127.0.0.1:8123; else echo "http://$P:8123"; fi; }
+start_local(){ echo "$(ha_upstream)" > "$ST/ha_upstream"; stop_job com.home.standby-web; stop_job com.home.standby-mcp; start_job com.home.standby-web; start_job com.home.standby-mcp; }
+
+ha_start(){
+  [ -d "$S/ha-config/.storage" ] || { log "no restored HA config; run restore"; return 1; }
+  docker info >/dev/null 2>&1 || { open -a Docker; for i in $(seq 1 30); do docker info >/dev/null 2>&1 && break; sleep 3; done; }
+  touch "$ST/HA_FAILOVER"; docker compose -f "$S/failover/ha-compose.yml" up -d && log "HA standby started (automations ON)"
+  start_local
+}
+ha_stop(){ docker compose -f "$S/failover/ha-compose.yml" down >/dev/null 2>&1; rm -f "$ST/HA_FAILOVER"; log "HA standby stopped"; }
+
+activate(){
+  [ -f "$ST/WEB_FAILOVER" ] && { log "already active"; return 0; }
+  cp "$S/data/home.db.replica" "$S/data/home.db" && rm -f "$S/data/home.db-wal" "$S/data/home.db-shm"; chmod 600 "$S/data/home.db"
+  start_local; touch "$ST/WEB_FAILOVER"; date +%s > "$ST/since"
+  notify "Mac mini now serves the Home app (omarchy web unreachable or manual). HA upstream $(ha_upstream)"
+}
+deactivate(){
+  [ "${1:-}" = --force ] || web_up || { log "omarchy web not up; refusing (use --force)"; return 1; }
+  ha_stop
+  if [ -f "$ST/WEB_FAILOVER" ]; then
+    rm -f "$ST/WEB_FAILOVER"   # front proxy switches back to omarchy for new connections
+    sqlite3 "$S/data/home.db" ".backup '$S/data/home.db.failover-out'"
+    # Mac was the single writer -> push its db back (omarchy copy kept as .pre-failover)
+    if scp -q "$S/data/home.db.failover-out" omarchy:/home/owner/home-automation/data/home.db.from-mac && \
+       ssh omarchy 'cd /home/owner/home-automation/data && systemctl --user stop home-web && sqlite3 home.db ".backup home.db.pre-failover-$(date +%Y%m%d%H%M)" && sqlite3 home.db.from-mac ".backup home.db" && rm -f home.db.from-mac && systemctl --user start home-web'; then
+      log "db pushed back to omarchy"; else notify "Could not push failover db back to omarchy - see $S/data/home.db.failover-out"; fi
+  fi
+  stop_job com.home.standby-web; stop_job com.home.standby-mcp; rm -f "$ST/since" "$ST/down_since"
+  notify "omarchy is back; Mac standby stopped"
+}
+status(){
+  echo "omarchy web: $(web_up && echo up || echo DOWN)  HA: $(ha_up && echo up || echo DOWN)"
+  echo "WEB_FAILOVER: $([ -f $ST/WEB_FAILOVER ] && echo ON || echo off)  HA_FAILOVER: $([ -f $ST/HA_FAILOVER ] && echo ON || echo off)"
+  echo "latest backup: $(readlink $S/backups/latest)"; docker ps --filter name=ha-standby --format '{{.Names}} {{.Status}}' 2>/dev/null
+}
+watchdog(){
+  now=$(date +%s)
+  if web_up && ha_up; then
+    rm -f "$ST/down_since" "$ST/webfails"
+    { [ -f "$ST/WEB_FAILOVER" ] || [ -f "$ST/HA_FAILOVER" ]; } && [ ! -f "$ST/MANUAL" ] && deactivate
+    return 0
+  fi
+  if ! web_up; then n=$(( $(cat "$ST/webfails" 2>/dev/null || echo 0) + 1 )); echo $n > "$ST/webfails"
+    [ $n -ge 3 ] && [ ! -f "$ST/WEB_FAILOVER" ] && { log "omarchy web down x$n"; activate; }
+  else rm -f "$ST/webfails"; fi
+  if ! ha_up; then [ -f "$ST/down_since" ] || echo $now > "$ST/down_since"
+    if [ $(( now - $(cat "$ST/down_since") )) -ge 600 ] && [ ! -f "$ST/HA_FAILOVER" ]; then
+      ping -c2 -t3 $P >/dev/null 2>&1 && ssh -o ConnectTimeout=5 omarchy 'docker inspect -f {{.State.Running}} homeassistant' 2>/dev/null | grep -q true \
+        && { log "HA API down but omarchy container still running - NOT starting standby HA (avoid double control)"; return 0; }
+      log "omarchy HA down >10 min -> starting HA standby"; [ -f "$ST/WEB_FAILOVER" ] || activate; ha_start
+      notify "omarchy HA down >10 min: Mac mini HA standby started with automations"
+    fi
+  else rm -f "$ST/down_since"; [ -f "$ST/HA_FAILOVER" ] && ha_stop && start_local; fi
+}
+restore(){
+  B=$S/backups/latest; [ -f "$B/ha-config.tgz" ] || { echo "no backup"; return 1; }
+  (cd "$B" && shasum -a 256 -c SHA256SUMS >/dev/null) || { echo "checksum FAIL"; return 1; }
+  [ -f "$ST/HA_FAILOVER" ] && { echo "HA standby running; stop first"; return 1; }
+  rm -rf "$S/ha-config.new"; mkdir -p "$S/ha-config.new"; tar xzf "$B/ha-config.tgz" -C "$S/ha-config.new"
+  rm -rf "$S/ha-config"; mv "$S/ha-config.new" "$S/ha-config"; log "restored HA config from $(readlink $B)"
+}
+case "${1:-status}" in
+  activate) touch "$ST/MANUAL"; activate;; deactivate) rm -f "$ST/MANUAL"; deactivate "${2:-}";;
+  ha-start) touch "$ST/MANUAL"; [ -f "$ST/WEB_FAILOVER" ] || activate; ha_start;; ha-stop) ha_stop; start_local;;
+  watchdog) watchdog;; restore) restore;; status) status;; *) echo "usage: $0 activate|deactivate [--force]|ha-start|ha-stop|restore|status|watchdog";;
+esac

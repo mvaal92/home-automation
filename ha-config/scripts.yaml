@@ -1,0 +1,467 @@
+heating_apply:
+  alias: Heating · Apply level
+  icon: mdi:thermostat-auto
+  mode: queued
+  description: 'Sets all three ELKO thermostats to a level relative to their stored
+    comfort setpoints: comfort = stored value, night = comfort − night offset, away
+    = comfort − away offset, vacation = comfort − vacation offset (never below 7 °C).
+    Only touches thermostats that are available and in heat mode. Never changes the
+    HVAC mode.'
+  fields:
+    state:
+      name: Level
+      required: true
+      default: comfort
+      selector:
+        select:
+          options:
+          - comfort
+          - night
+          - away
+          - vacation
+  sequence:
+  - variables:
+      offset: '{% set m={''comfort'':0,''night'':states(''input_number.heating_night_offset'')|float(2),''away'':states(''input_number.heating_away_offset'')|float(4),''vacation'':states(''input_number.heating_vacation_offset'')|float(7)}
+        %}{{ m.get(state,0) }}'
+  - action: input_select.select_option
+    target:
+      entity_id: input_select.heating_state
+    data:
+      option: '{{ state }}'
+  - if:
+    - condition: state
+      entity_id: climate.spisestue_termostat_stue_kjokken
+      state: heat
+    then:
+    - action: climate.set_temperature
+      target:
+        entity_id: climate.spisestue_termostat_stue_kjokken
+      data:
+        temperature: '{{ [7, (states(''input_number.comfort_stue_kjokken'')|float(20)
+          - offset|float(0))] | max | round(1) }}'
+      continue_on_error: true
+  - if:
+    - condition: state
+      entity_id: climate.kjokken_elko_one_thermostat
+      state: heat
+    then:
+    - action: climate.set_temperature
+      target:
+        entity_id: climate.kjokken_elko_one_thermostat
+      data:
+        temperature: '{{ [7, (states(''input_number.comfort_kjokken'')|float(20) -
+          offset|float(0))] | max | round(1) }}'
+      continue_on_error: true
+  - if:
+    - condition: state
+      entity_id: climate.basement_beta_elko_smart_zb_termostat
+      state: heat
+    then:
+    - action: climate.set_temperature
+      target:
+        entity_id: climate.basement_beta_elko_smart_zb_termostat
+      data:
+        temperature: '{{ [7, (states(''input_number.comfort_basement'')|float(20)
+          - offset|float(0))] | max | round(1) }}'
+      continue_on_error: true
+leave_home:
+  alias: Home · Leave home
+  icon: mdi:home-export-outline
+  mode: single
+  description: Run when everyone leaves (or set Home mode to Away/Vacation). Turns
+    off lights in common rooms, basement and kids/guest rooms (guest room is skipped
+    when Guest mode is on), turns off TVs, pauses Sonos, turns off the Juletre plug
+    and lowers heating to the away level (vacation level if Home mode is Vacation).
+    Never touches the fridge, router, water heater, ventilation or unknown plugs.
+  sequence:
+  - if:
+    - condition: template
+      value_template: '{{ states(''input_select.home_mode'') not in [''Away'', ''Vacation'']
+        }}'
+    then:
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.home_mode
+      data:
+        option: Away
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.movie_mode
+  - if:
+    - condition: state
+      entity_id: input_boolean.guest_mode
+      state: 'on'
+    then:
+    - action: light.turn_off
+      target:
+        entity_id:
+        - light.kjokken_taklamper_kjokken_1
+        - light.kjokken_lys_under_overkap
+        - light.kjokken_lys_kaffestasjon
+        - light.kjokken_lys_skap_kjokken
+        - light.kjokken_bordlampe
+        - light.spisestue_taklampe_spisebord
+        - light.spisestue_bordlampe_hoy
+        - light.spisestue_gulvlampe_stue
+        - light.tv_stue_tv_lys
+        - light.wiz_dimmable_white_d7a578
+        - light.wiz_dimmable_white_d71508
+        - light.wiz_dimmable_white_be230e
+        - light.wiz_dimmable_white_57a6b2
+        - light.wiz_dimmable_white_be20c0
+        - light.wiz_dimmable_white_be271c
+        - light.wiz_tunable_white_362476
+        - light.kid1_zigbee_dimmer_1
+      continue_on_error: true
+    else:
+    - action: scene.turn_on
+      target:
+        entity_id: scene.away
+      continue_on_error: true
+    - action: light.turn_off
+      target:
+        entity_id: light.spisestue_gulvlampe_stue
+      continue_on_error: true
+  - repeat:
+      for_each:
+      - media_player.tv_stue_samsung_tv
+      - media_player.bedroom_1_55_the_frame
+      sequence:
+      - if:
+        - condition: template
+          value_template: '{{ is_state(repeat.item,''on'') }}'
+        then:
+        - action: media_player.turn_off
+          target:
+            entity_id: '{{ repeat.item }}'
+          continue_on_error: true
+  - repeat:
+      for_each:
+      - media_player.kjokken_kjokken
+      - media_player.tv_room_tv_room
+      sequence:
+      - if:
+        - condition: template
+          value_template: '{{ is_state(repeat.item,''playing'') }}'
+        then:
+        - action: media_player.media_pause
+          target:
+            entity_id: '{{ repeat.item }}'
+          continue_on_error: true
+  - action: switch.turn_off
+    target:
+      entity_id:
+      - switch.spisestue_juletre
+    continue_on_error: true
+  - if:
+    - condition: state
+      entity_id: input_boolean.heating_schedule
+      state: 'on'
+    - condition: state
+      entity_id: input_boolean.guest_mode
+      state: 'off'
+    then:
+    - action: script.heating_apply
+      data:
+        state: '{{ ''vacation'' if is_state(''input_select.home_mode'',''Vacation'')
+          else ''away'' }}'
+arrive_home:
+  alias: Home · Arrive home
+  icon: mdi:home-import-outline
+  mode: single
+  description: 'Run when you come home (or set Home mode back to Home). Restores comfort
+    heating, and if it is dark: the Evening scene before quiet hours, or just the
+    entrance lights at 30 % during quiet hours.'
+  sequence:
+  - if:
+    - condition: template
+      value_template: '{{ states(''input_select.home_mode'') not in [''Home'', ''Guest'']
+        }}'
+    then:
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.home_mode
+      data:
+        option: Home
+  - if:
+    - condition: state
+      entity_id: input_select.heating_state
+      state:
+      - away
+      - vacation
+    - condition: state
+      entity_id: input_boolean.heating_schedule
+      state: 'on'
+    then:
+    - action: script.heating_apply
+      data:
+        state: '{{ ''night'' if is_state(''schedule.quiet_hours'',''on'') else ''comfort''
+          }}'
+  - if:
+    - condition: state
+      entity_id: sun.sun
+      state: below_horizon
+    then:
+    - if:
+      - condition: state
+        entity_id: schedule.quiet_hours
+        state: 'off'
+      then:
+      - action: scene.turn_on
+        target:
+          entity_id: scene.evening
+        data:
+          transition: 2
+        continue_on_error: true
+      else:
+      - action: light.turn_on
+        target:
+          entity_id:
+          - light.wiz_dimmable_white_d7a578
+          - light.wiz_dimmable_white_d71508
+        data:
+          brightness_pct: 30
+        continue_on_error: true
+bedtime:
+  alias: Home · Bedtime
+  icon: mdi:bed
+  mode: single
+  description: Good night routine. Sets Home mode to Night, turns off movie mode,
+    turns off lights in kitchen, dining, TV stue, entrance and basement (Good night
+    scene), the guest room unless Guest mode is on, turns off the TVs, pauses Sonos,
+    turns off the Juletre plug and lowers heating to the night level. Bedroom 1, Kid1'
+    room and the (unassigned) WiZ bulbs are left alone so nobody is plunged into darkness.
+  sequence:
+  - if:
+    - condition: template
+      value_template: '{{ states(''input_select.home_mode'') not in [''Night''] }}'
+    then:
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.home_mode
+      data:
+        option: Night
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.movie_mode
+  - action: scene.turn_on
+    target:
+      entity_id: scene.good_night
+    data:
+      transition: 3
+    continue_on_error: true
+  - action: light.turn_off
+    target:
+      entity_id: light.spisestue_gulvlampe_stue
+    continue_on_error: true
+  - if:
+    - condition: state
+      entity_id: input_boolean.guest_mode
+      state: 'off'
+    then:
+    - action: light.turn_off
+      target:
+        entity_id: light.gjesterom_taklys_gjesterom
+      continue_on_error: true
+  - repeat:
+      for_each:
+      - media_player.tv_stue_samsung_tv
+      - media_player.bedroom_1_55_the_frame
+      sequence:
+      - if:
+        - condition: template
+          value_template: '{{ is_state(repeat.item,''on'') }}'
+        then:
+        - action: media_player.turn_off
+          target:
+            entity_id: '{{ repeat.item }}'
+          continue_on_error: true
+  - repeat:
+      for_each:
+      - media_player.kjokken_kjokken
+      - media_player.tv_room_tv_room
+      sequence:
+      - if:
+        - condition: template
+          value_template: '{{ is_state(repeat.item,''playing'') }}'
+        then:
+        - action: media_player.media_pause
+          target:
+            entity_id: '{{ repeat.item }}'
+          continue_on_error: true
+  - action: switch.turn_off
+    target:
+      entity_id:
+      - switch.spisestue_juletre
+    continue_on_error: true
+  - if:
+    - condition: state
+      entity_id: input_boolean.heating_schedule
+      state: 'on'
+    - condition: state
+      entity_id: input_select.heating_state
+      state: comfort
+    then:
+    - action: script.heating_apply
+      data:
+        state: night
+movie_mode:
+  alias: TV stue · Movie mode
+  icon: mdi:movie-open
+  mode: single
+  description: Remembers the current kitchen/dining/TV stue lights, then applies the
+    Movie night scene (TV Lys and one dining lamp low and warm, ceilings off). Turning
+    Movie mode off (or the TV switching off) restores the remembered lights — unless
+    it is quiet hours, then lights are left as they are.
+  sequence:
+  - if:
+    - condition: state
+      entity_id: input_boolean.movie_mode
+      state: 'off'
+    then:
+    - action: scene.create
+      data:
+        scene_id: before_movie
+        snapshot_entities:
+        - light.kjokken_taklamper_kjokken_1
+        - light.kjokken_lys_under_overkap
+        - light.kjokken_lys_kaffestasjon
+        - light.kjokken_lys_skap_kjokken
+        - light.kjokken_bordlampe
+        - light.spisestue_taklampe_spisebord
+        - light.spisestue_bordlampe_hoy
+        - light.tv_stue_tv_lys
+        - light.wiz_dimmable_white_d7a578
+        - light.wiz_dimmable_white_d71508
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.movie_mode
+  - action: scene.turn_on
+    target:
+      entity_id: scene.movie_night
+    data:
+      transition: 4
+    continue_on_error: true
+all_off:
+  alias: Home · All off
+  icon: mdi:power
+  mode: single
+  description: Turns off every light (including the WiZ bulbs and bedrooms), the TVs
+    and the Juletre plug, and pauses Sonos. Deliberately does NOT touch thermostats,
+    the Flexit ventilation, the water heater, the router/network, the washer or unknown
+    plugs (Kid1 Zigbee Switch 1/2, Utelys Inngang).
+  sequence:
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.movie_mode
+  - action: light.turn_off
+    target:
+      entity_id: all
+    continue_on_error: true
+  - repeat:
+      for_each:
+      - media_player.tv_stue_samsung_tv
+      - media_player.bedroom_1_55_the_frame
+      sequence:
+      - if:
+        - condition: template
+          value_template: '{{ is_state(repeat.item,''on'') }}'
+        then:
+        - action: media_player.turn_off
+          target:
+            entity_id: '{{ repeat.item }}'
+          continue_on_error: true
+  - repeat:
+      for_each:
+      - media_player.kjokken_kjokken
+      - media_player.tv_room_tv_room
+      sequence:
+      - if:
+        - condition: template
+          value_template: '{{ is_state(repeat.item,''playing'') }}'
+        then:
+        - action: media_player.media_pause
+          target:
+            entity_id: '{{ repeat.item }}'
+          continue_on_error: true
+  - action: switch.turn_off
+    target:
+      entity_id:
+      - switch.spisestue_juletre
+    continue_on_error: true
+flexit_filter_replaced:
+  alias: Flexit · Filter replaced
+  icon: mdi:air-filter
+  mode: single
+  description: 'Run after you have physically changed the Flexit fan filter: resets
+    the fan''s filter timer so the reminder stops.'
+  sequence:
+  - action: ecovent_v2.filter_timer_reset
+    target:
+      entity_id: fan.flexit_fan
+  - action: persistent_notification.dismiss
+    data:
+      notification_id: flexit_filter
+stovsug_hele_huset:
+  alias: Støvsug hele huset
+  icon: mdi:robot-vacuum
+  mode: single
+  sequence:
+  - action: script.dreame_rengjor_rom
+    data:
+      rooms:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+stovsug_kjokken:
+  alias: Støvsug kjøkkenet
+  icon: mdi:silverware-fork-knife
+  mode: single
+  sequence:
+  - action: script.dreame_rengjor_rom
+    data:
+      rooms:
+      - Kjøkken
+stovsug_kjokken_spisestue:
+  alias: Støvsug kjøkken og spisestue
+  icon: mdi:table-chair
+  mode: single
+  sequence:
+  - action: script.dreame_rengjor_rom
+    data:
+      rooms:
+      - Kjøkken
+      - Spisestue
+stovsug_stua:
+  alias: Støvsug stua
+  icon: mdi:sofa
+  mode: single
+  sequence:
+  - action: script.dreame_rengjor_rom
+    data:
+      rooms:
+      - Stue
+      - Stue 2
+vask_gulv_kjokken:
+  alias: Vask gulv på kjøkkenet
+  icon: mdi:water
+  mode: single
+  sequence:
+  - action: script.dreame_rengjor_rom
+    data:
+      rooms:
+      - Kjøkken
+      mode: AutoMop
+dreame_til_dokk:
+  alias: Støvsuger til dokken
+  icon: mdi:home-import-outline
+  mode: single
+  sequence:
+  - action: vacuum.return_to_base
+    target:
+      entity_id: vacuum.dreame_x50_ultra

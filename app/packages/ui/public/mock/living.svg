@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <defs>
+    <linearGradient id="w" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2b2e33"/><stop offset="1" stop-color="#1b1d21"/></linearGradient>
+    <radialGradient id="l" cx=".2" cy=".35" r=".6"><stop offset="0" stop-color="#f2b766" stop-opacity=".45"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+    <radialGradient id="v" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".7"/></radialGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#w)"/>
+  <rect y="270" width="640" height="90" fill="#26221e"/>
+  <rect x="400" y="60" width="180" height="120" fill="#3c4a5c" opacity=".55"/><path d="M490 60v120" stroke="#1b1d21" stroke-width="4"/>
+  <rect x="190" y="185" width="260" height="70" rx="14" fill="#4b4f57"/><rect x="175" y="215" width="290" height="60" rx="16" fill="#555a62"/>
+  <rect x="200" y="160" width="70" height="50" rx="10" fill="#6b5a48"/>
+  <path d="M110 270V130" stroke="#8a7a66" stroke-width="4"/><path d="M80 130h60l-12-40H92z" fill="#e9c58c"/>
+  <rect x="490" y="235" width="90" height="40" rx="4" fill="#3a3530"/>
+  <rect width="640" height="360" fill="url(#l)"/><rect width="640" height="360" fill="url(#v)"/>
+</svg>

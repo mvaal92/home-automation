@@ -1,0 +1,21 @@
+[Unit]
+Description=Home MCP server (streamable HTTP, Tailscale :8125/mcp)
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/owner/home-automation/app/packages/mcp
+ExecStart=/home/owner/.local/share/vite-plus/js_runtime/node/24.21.0/bin/node /home/owner/home-automation/app/packages/mcp/dist/home-mcp.mjs
+Environment=HOME_MCP_PORT=8125
+Environment=HOME_MCP_BIND=100.64.0.1,127.0.0.1
+Environment=HOME_WEB_URL=http://100.64.0.1:8124
+Environment=HOME_HA_URL=http://127.0.0.1:8123
+Environment=HOME_HA_TOKEN_FILE=/home/owner/home-automation/secrets/ha_token
+Environment=HOME_MCP_TOKEN_FILE=/home/owner/home-automation/secrets/mcp_token
+Restart=always
+RestartSec=5
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target

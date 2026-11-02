@@ -1,0 +1,6 @@
+[mcp_servers.home]
+url = "http://100.64.0.1:8125/mcp"
+enabled = true
+
+[mcp_servers.home.headers]
+Authorization = "Bearer ${HOME_MCP_TOKEN}"

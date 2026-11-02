@@ -1,0 +1,65 @@
+/* Hvileskjerm – calm full-screen ambient view */
+/* Edge to edge on iPad: fixed to the large viewport (Safari toolbars collapsing never reveal a strip), under the
+   status bar/home indicator (viewport-fit=cover), background = the current painting's average colour so nothing ever
+   reads as a bar during crossfades or the slow pan. */
+.hvile { position: fixed; top: 0; right: 0; bottom: 0; left: 0; width: 100vw; height: 100vh; height: 100lvh; min-height: 100%; z-index: 9000;
+  background: var(--hv-bg, #07080a); transition: background-color 3s ease; color: #f4f1ea; overflow: hidden; cursor: none;
+  animation: hv-in 1.6s ease both; -webkit-user-select: none; user-select: none; touch-action: none; }
+.hvile.out { animation: hv-out .7s ease both; }
+@keyframes hv-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes hv-out { to { opacity: 0 } }
+.hv-grad { position: absolute; inset: -10%; transition: background 4s ease; background: radial-gradient(120% 90% at 20% 10%, #2b3b55 0%, #121826 55%, #07080a 100%); animation: hv-breathe 90s ease-in-out infinite alternate; }
+.hvile[data-phase="dawn"] .hv-grad { background: radial-gradient(120% 90% at 30% 90%, #e9a77c 0%, #6c5a7c 40%, #1d2234 100%); }
+.hvile[data-phase="day"] .hv-grad { background: radial-gradient(120% 90% at 70% 0%, #a9c6dc 0%, #557696 45%, #1d2b3d 100%); }
+.hvile[data-phase="dusk"] .hv-grad { background: radial-gradient(120% 90% at 80% 100%, #d9825b 0%, #5b3f63 45%, #141827 100%); }
+.hvile.night .hv-grad { background: #000; animation: none; }
+@keyframes hv-breathe { from { transform: scale(1) translate(0, 0) } to { transform: scale(1.08) translate(-2%, 1%) } }
+
+.hv-slide { position: absolute; inset: 0; overflow: hidden; opacity: 0; z-index: 1; transition: opacity 3.5s ease; background: var(--hv-c, transparent); }
+.hv-slide.show { opacity: 1; z-index: 2; }
+.hv-slide.under { opacity: 1; z-index: 1; transition: none; } /* previous painting stays fully opaque underneath while the next fades in */
+.hv-slide img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; max-width: none;
+  transform-origin: 50% 50%; will-change: transform; animation: var(--kb) var(--dur, 330s) linear both; }
+.hv-slide.kb0 img { --kb: kb0 } .hv-slide.kb1 img { --kb: kb1 } .hv-slide.kb2 img { --kb: kb2 } .hv-slide.kb3 img { --kb: kb3 }
+@keyframes kb0 { from { transform: scale(1.04) translate(0, 0) } to { transform: scale(1.14) translate(-2.5%, -1.5%) } }
+@keyframes kb1 { from { transform: scale(1.14) translate(2%, 1%) } to { transform: scale(1.04) translate(0, 0) } }
+@keyframes kb2 { from { transform: scale(1.06) translate(-2%, 1.5%) } to { transform: scale(1.12) translate(2%, -1%) } }
+@keyframes kb3 { from { transform: scale(1.1) translate(1.5%, -2%) } to { transform: scale(1.05) translate(-1.5%, 1.5%) } }
+.hv-veil { position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: linear-gradient(180deg, rgba(0,0,0,.42) 0%, rgba(0,0,0,0) 32%, rgba(0,0,0,0) 62%, rgba(0,0,0,.5) 100%); }
+.hvile.night .hv-veil { display: none; }
+
+.hv-ov { position: absolute; z-index: 4; left: calc(clamp(28px, 5vw, 80px) + env(safe-area-inset-left, 0px)); top: calc(clamp(28px, 6vh, 72px) + env(safe-area-inset-top, 0px)); transition: transform 8s ease, opacity 2s; text-shadow: 0 1px 24px rgba(0,0,0,.45); }
+.hv-time { display: block; font-size: clamp(84px, 13vw, 200px); font-weight: 200; letter-spacing: -.035em; line-height: .95; font-variant-numeric: tabular-nums; }
+.hv-date { margin-top: 10px; font-size: clamp(18px, 2vw, 26px); font-weight: 300; opacity: .9; }
+.hv-date::first-letter { text-transform: uppercase; }
+.hv-meta { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; font-size: clamp(16px, 1.6vw, 21px); font-weight: 300; }
+.hv-wx, .hv-ev { display: inline-flex; align-items: center; gap: 10px; opacity: .92; }
+.hv-wx .dim { opacity: .65; }
+.hv-ev .dot { width: 8px; height: 8px; border-radius: 50%; background: #9cc; flex: none; }
+.hv-cap { position: absolute; z-index: 4; right: calc(clamp(20px, 3vw, 44px) + env(safe-area-inset-right, 0px));
+  bottom: calc(clamp(18px, 3vh, 36px) + env(safe-area-inset-bottom, 0px) + (100lvh - 100dvh)); /* stays above Safari's toolbar */ font-size: 12.5px; letter-spacing: .02em; opacity: .62; font-weight: 400;
+  max-width: 50vw; text-align: right; transition: transform 8s ease; text-shadow: 0 1px 10px rgba(0,0,0,.6); }
+
+/* night: very dark, clock only, low contrast, centred-ish and drifting */
+.hvile.night { cursor: none; }
+.hvile.night .hv-ov { left: 50%; top: 50%; translate: -50% -50%; text-align: center; text-shadow: none; }
+.hvile.night .hv-time { color: #6f6a62; opacity: .55; font-size: clamp(72px, 10vw, 150px); }
+
+@media (max-width: 767px) {
+  .hv-ov { left: 24px; right: 24px; top: auto; bottom: calc(18dvh + (100lvh - 100dvh)); }
+  .hv-cap { left: 24px; right: 24px; max-width: none; text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hv-slide img, .hv-grad { animation: none !important; transform: scale(1.02); }
+  .hv-slide { transition: opacity 1.2s linear; }
+  .hv-ov, .hv-cap { transition: none; }
+  .hvile, .hvile.out { animation-duration: .2s; }
+}
+.hv-settings h3 { display: flex; align-items: center; gap: 8px; }
+.hv-settings .seg.wrap { flex-wrap: wrap; }
+.hv-settings .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.hv-settings .chip { border: 1px solid var(--line, rgba(127,127,127,.3)); background: transparent; color: inherit; border-radius: 999px; padding: 5px 12px; font: inherit; font-size: 13px; cursor: pointer; text-transform: none; }
+.hv-settings .chip.on { background: var(--accent, #4a7); color: var(--accent-fg, #fff); border-color: transparent; }
+.hv-settings .row.gap { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.hv-settings .field { margin: 12px 0; display: flex; flex-direction: column; gap: 6px; }

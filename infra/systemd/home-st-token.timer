@@ -1,0 +1,8 @@
+[Unit]
+Description=SmartThings token sync every 30 min
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=30min
+Persistent=true
+[Install]
+WantedBy=timers.target

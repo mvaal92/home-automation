@@ -1,0 +1,22 @@
+.auth-sheet { display: grid; gap: 14px; padding-bottom: env(safe-area-inset-bottom); }
+.auth-msg { margin: 0; color: var(--fg-2, inherit); line-height: 1.45; }
+.auth-small { font-size: 12px; margin: 0; }
+.auth-form { display: grid; gap: 12px; }
+.auth-field { display: grid; gap: 6px; font-size: 13px; }
+.auth-field input, .auth-insert input { height: 46px; font-size: 17px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--bg-2); color: inherit; width: 100%; box-sizing: border-box; }
+.auth-field input:focus, .auth-insert input:focus { outline: none; border-color: var(--accent); }
+.auth-code { letter-spacing: .4em; text-align: center; font-variant-numeric: tabular-nums; }
+.auth-submit { height: 46px; justify-content: center; font-size: 16px; background: var(--accent); color: var(--accent-fg); border-color: transparent; width: 100%; }
+.auth-center { display: grid; justify-items: center; gap: 12px; padding: 20px 0; text-align: center; }
+.auth-ok { color: var(--ok, #3fb950); } .auth-ok strong { color: var(--fg); }
+.auth-err { color: var(--warn, #d29922); } .auth-err span { color: var(--fg); }
+.auth-pulse { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-ink, var(--accent)); animation: auth-pulse 1.6s ease-in-out infinite; }
+@keyframes auth-pulse { 0%,100% { box-shadow: 0 0 0 0 var(--accent-soft); } 50% { box-shadow: 0 0 0 16px transparent; } }
+.auth-remote { display: grid; gap: 10px; }
+.auth-remote img { width: 100%; max-height: 62vh; object-fit: contain; border-radius: 12px; border: 1px solid var(--line); touch-action: none; user-select: none; background: #fff; }
+.auth-insert { display: flex; gap: 8px; } .auth-insert input { flex: 1; height: 40px; font-size: 15px; }
+.conn-row { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.conn-row > div:last-child { margin-left: auto; }
+/* QA2: long callback URLs/details must wrap instead of widening the card on phones */
+.conn-row { min-width: 0; } .conn-row .muted { overflow-wrap: anywhere; }
+@media (max-width: 480px) { .conn-row > div:last-child { width: 100%; justify-content: flex-end; } }

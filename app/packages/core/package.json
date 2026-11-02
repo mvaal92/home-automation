@@ -1,0 +1,18 @@
+{
+  "name": "@home/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "home-assistant-js-websocket": "^9.5.0"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
+}

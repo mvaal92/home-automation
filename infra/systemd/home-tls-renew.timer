@@ -1,0 +1,7 @@
+[Unit]
+Description=Weekly Tailscale cert renewal for Home web
+[Timer]
+OnCalendar=Sun 04:20
+Persistent=true
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,111 @@
+# Dreame X50 Ultra via SmartThings (Matter bridge) - interim full control until
+# the Tasshack dreame_vacuum cloud login (map, consumables, water level) is configured.
+rest:
+  - resource: https://api.smartthings.com/v1/devices/b773ac4d-5dce-4ca0-bb13-db998db13a72/status
+    headers:
+      Authorization: !secret smartthings_bearer
+    scan_interval: 20
+    timeout: 15
+    sensor:
+      - name: Dreame driftstatus
+        unique_id: dreame_st_operating_state
+        icon: mdi:robot-vacuum
+        value_template: "{{ value_json.components.main.robotCleanerOperatingState.operatingState.value }}"
+      - name: Dreame modus
+        unique_id: dreame_st_mode
+        icon: mdi:tune-variant
+        value_template: "{{ value_json.components.main.mode.mode.value }}"
+        json_attributes_path: "$.components.main.mode.supportedModes"
+        json_attributes: [value]
+      - name: Dreame rom
+        unique_id: dreame_st_rooms
+        icon: mdi:floor-plan
+        value_template: "{{ value_json.components.main.serviceArea.supportedAreas.value | count }}"
+        json_attributes_path: "$.components.main.serviceArea"
+        json_attributes: [supportedAreas, selectedAreas]
+
+rest_command:
+  dreame_st:
+    url: https://api.smartthings.com/v1/devices/b773ac4d-5dce-4ca0-bb13-db998db13a72/commands
+    method: post
+    headers:
+      Authorization: !secret smartthings_bearer
+    content_type: application/json
+    payload: >-
+      {"commands":[{"component":"main","capability":"{{ capability }}","command":"{{ command }}","arguments":{{ (arguments | default([])) | to_json }}}]}
+
+template:
+  - vacuum:
+      - name: Dreame X50 Ultra
+        unique_id: dreame_x50_st_vacuum
+        state: >-
+          {% set s = states('sensor.dreame_driftstatus') %}
+          {{ {'running':'cleaning','paused':'paused','seekingCharger':'returning','charging':'docked','docked':'docked','stopped':'idle'}.get(s, 'error' if s not in ['unknown','unavailable'] else 'idle') }}
+        fan_speeds: ["Quick", "Auto", "Deep Clean", "Quiet", "Low Energy", "AutoMop"]
+        fan_speed: "{{ states('sensor.dreame_modus') }}"
+        attributes:
+          rooms: >-
+            {% set names = {'diningroom':'Spisestue','livingroom':'Stue','kitchen':'Kjøkken','boxroom':'Bod','corridor':'Gang','livingroom2':'Stue 2','bathroom':'Bad','room8':'Rom 8'} %}
+            {% set ns = namespace(r=[]) %}
+            {% for a in (state_attr('sensor.dreame_rom','supportedAreas') or {}).get('value', []) %}{% set ns.r = ns.r + [{'id': a.areaId, 'key': a.areaName, 'name': names.get(a.areaName, a.areaName)}] %}{% endfor %}
+            {{ ns.r }}
+          selected_rooms: "{{ (state_attr('sensor.dreame_rom','selectedAreas') or {}).get('value', []) }}"
+          raw_state: "{{ states('sensor.dreame_driftstatus') }}"
+          source: smartthings
+        start:
+          - action: rest_command.dreame_st
+            data: {capability: robotCleanerOperatingState, command: start}
+          - action: homeassistant.update_entity
+            target: {entity_id: sensor.dreame_driftstatus}
+        pause:
+          - action: rest_command.dreame_st
+            data: {capability: robotCleanerOperatingState, command: pause}
+        stop:
+          - action: rest_command.dreame_st
+            data: {capability: robotCleanerOperatingState, command: pause}
+        return_to_base:
+          - action: rest_command.dreame_st
+            data: {capability: robotCleanerOperatingState, command: goHome}
+        set_fan_speed:
+          - action: rest_command.dreame_st
+            data: {capability: mode, command: setMode, arguments: ["{{ fan_speed }}"]}
+          - action: homeassistant.update_entity
+            target: {entity_id: sensor.dreame_modus}
+
+script:
+  dreame_rengjor_rom:
+    alias: Dreame – rengjør rom
+    icon: mdi:robot-vacuum
+    mode: single
+    fields:
+      rooms:
+        description: Rom-IDer (1-8) eller navn, f.eks. [3] eller ["Kjøkken"]
+        required: true
+        selector:
+          object:
+      mode:
+        description: Valgfri modus (Quick, Auto, Deep Clean, Quiet, Low Energy, AutoMop)
+        selector:
+          select:
+            options: [Quick, Auto, Deep Clean, Quiet, Low Energy, AutoMop]
+    sequence:
+      - variables:
+          all_rooms: "{{ state_attr('vacuum.dreame_x50_ultra','rooms') or [] }}"
+          wanted: "{{ [rooms] if rooms is string or rooms is number else rooms }}"
+          ids: >-
+            {% set ns = namespace(i=[]) %}
+            {% for w in wanted %}{% for r in all_rooms %}{% if (w|string)|lower in [r.id|string, r.name|lower, r.key|lower] %}{% set ns.i = ns.i + [r.id] %}{% endif %}{% endfor %}{% endfor %}
+            {{ ns.i | unique | list }}
+      - condition: template
+        value_template: "{{ ids | count > 0 }}"
+      - action: rest_command.dreame_st
+        data: {capability: serviceArea, command: selectAreas, arguments: ["{{ ids }}"]}
+      - if: "{{ mode is defined and mode }}"
+        then:
+          - action: rest_command.dreame_st
+            data: {capability: mode, command: setMode, arguments: ["{{ mode }}"]}
+      - delay: 2
+      - action: rest_command.dreame_st
+        data: {capability: robotCleanerOperatingState, command: start}
+      - action: homeassistant.update_entity
+        target: {entity_id: [sensor.dreame_driftstatus, sensor.dreame_rom]}

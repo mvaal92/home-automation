@@ -1,0 +1,29 @@
+{
+  "name": "@home/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP server for the Home app: Home Assistant tools over streamable HTTP (bearer auth) or stdio.",
+  "bin": {
+    "home-mcp": "dist/home-mcp.mjs"
+  },
+  "scripts": {
+    "build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/home-mcp.mjs --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\"",
+    "start": "node dist/home-mcp.mjs",
+    "stdio": "node dist/home-mcp.mjs --stdio",
+    "typecheck": "tsc -p .",
+    "test:live": "node scripts/live-test.mjs",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@home/core": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "esbuild": "^0.25.10",
+    "typescript": "~5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

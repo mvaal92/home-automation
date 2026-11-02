@@ -1,0 +1,44 @@
+.robots-page { display: flex; flex-direction: column; gap: 18px; }
+.robot-hero { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; padding: 20px; border-radius: 22px; background: linear-gradient(135deg, var(--bg-2), transparent); border: 1px solid var(--line-2); }
+.robot-orb { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--bg-3); position: relative; }
+.robot-orb.active::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--accent); animation: robo-pulse 1.6s ease-out infinite; }
+@keyframes robo-pulse { from { opacity: .9; transform: scale(.95); } to { opacity: 0; transform: scale(1.25); } }
+.robot-hero h2 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -.01em; }
+.robot-state { font-size: 14px; color: var(--fg-2); margin-top: 2px; }
+.robot-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.robot-actions .btn { display: inline-flex; align-items: center; gap: 6px; }
+.robot-map { position: relative; border-radius: 22px; overflow: hidden; border: 1px solid var(--line-2); background: var(--bg-2); }
+.robot-map img { display: block; width: 100%; height: auto; }
+.floorplan { display: grid; grid-auto-flow: dense; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 92px; gap: 8px; padding: 12px; }
+.floorplan .fp-room { border-radius: 14px; border: 1.5px dashed var(--line-2); background: var(--bg-2); display: flex; flex-direction: column; justify-content: space-between; padding: 10px 12px; text-align: left; font: inherit; color: inherit; cursor: pointer; transition: all .15s ease; }
+.floorplan .fp-room:hover { border-color: var(--fg-3); }
+.floorplan .fp-room.sel { border-style: solid; border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.floorplan .fp-room .fp-name { font-weight: 600; font-size: 14px; }
+.floorplan .fp-room .fp-meta { font-size: 11px; color: var(--fg-3); }
+.floorplan .wide { grid-column: span 2; } .floorplan .tall { grid-row: span 2; }
+.map-bar { display: flex; gap: 8px; align-items: center; padding: 10px 12px; border-top: 1px solid var(--line-2); flex-wrap: wrap; }
+.map-bar .grow { flex: 1; }
+.robot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.robot-grid .card h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 14px; font-weight: 600; }
+.mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.mode-grid button { padding: 10px 6px; border-radius: 12px; border: 1px solid var(--line-2); background: transparent; color: inherit; font: inherit; font-size: 13px; cursor: pointer; }
+.mode-grid button.on { background: var(--fg); color: var(--bg); border-color: transparent; }
+.consumable { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; margin-bottom: 10px; font-size: 13px; }
+.consumable .bar { grid-column: span 2; height: 6px; border-radius: 3px; background: var(--bg-3); overflow: hidden; }
+.consumable .bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+.consumable .bar i.low { background: #e5484d; }
+.preset-list { display: flex; flex-direction: column; gap: 6px; }
+.preset-list button { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line-2); background: transparent; color: inherit; font: inherit; cursor: pointer; text-align: left; }
+.preset-list button:hover { background: var(--bg-2); }
+.robot-tabs { display: flex; gap: 6px; }
+.timeline { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+.timeline div { display: flex; justify-content: space-between; gap: 10px; }
+.battery-ring { --p: 0; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--accent) calc(var(--p) * 1%), var(--bg-3) 0); }
+.battery-ring > span { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--bg); font-weight: 600; font-size: 14px; }
+@media (max-width: 640px) {
+  .robot-hero { grid-template-columns: auto 1fr; } .robot-hero .robot-actions { grid-column: span 2; }
+  .floorplan { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 78px; }
+  .floorplan .wide { grid-column: span 1; } .floorplan .tall { grid-row: span 1; }
+}
+
+.robots-head { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }

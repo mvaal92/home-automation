@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d1424"/>
+      <stop offset="0.55" stop-color="#1b2a40"/>
+      <stop offset="1" stop-color="#3a3f52"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.68" cy="0.30" r="0.42">
+      <stop offset="0" stop-color="#f3e6c8" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#f3e6c8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="hill1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3550"/><stop offset="1" stop-color="#1a2236"/></linearGradient>
+    <linearGradient id="hill2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#18203a"/><stop offset="1" stop-color="#0f1526"/></linearGradient>
+    <mask id="moon"><rect width="1024" height="1024" fill="#000"/><circle cx="690" cy="310" r="112" fill="#fff"/><circle cx="740" cy="270" r="104" fill="#000"/></mask>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#sky)"/>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+  <rect width="1024" height="1024" fill="#f1e4c4" mask="url(#moon)" opacity="0.92"/>
+  <path d="M0 700 C 180 610 330 640 470 690 C 620 742 800 650 1024 620 L1024 1024 L0 1024 Z" fill="url(#hill1)"/>
+  <path d="M0 820 C 220 760 420 800 600 840 C 760 876 900 820 1024 790 L1024 1024 L0 1024 Z" fill="url(#hill2)"/>
+  <g transform="translate(330 610)" fill="none" stroke="#efe2c2" stroke-width="22" stroke-linejoin="round" stroke-linecap="round" opacity="0.9">
+    <path d="M0 150 L0 70 L90 0 L180 70 L180 150"/>
+  </g>
+  <rect x="402" y="712" width="36" height="48" rx="6" fill="#f3d9a0" opacity="0.85"/>
+</svg>

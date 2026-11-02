@@ -1,0 +1,68 @@
+{
+  "name": "@home/desktop",
+  "productName": "Home",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Home \u2014 smart home control for the owner",
+  "author": "owner",
+  "main": "dist-electron/main.cjs",
+  "scripts": {
+    "build:main": "esbuild src/main.ts src/preload.ts --bundle --platform=node --format=cjs --external:electron --outdir=dist-electron --out-extension:.js=.cjs",
+    "build:renderer": "pnpm --filter @home/ui build && rm -rf renderer && cp -r ../../packages/ui/dist renderer",
+    "dev": "pnpm build:main && node scripts/dev.mjs",
+    "start": "pnpm build:main && electron .",
+    "dist": "pnpm build:renderer && pnpm build:main && electron-builder --linux AppImage dir",
+    "typecheck": "tsc -p ."
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "electron": "^38.2.2",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.10"
+  },
+  "build": {
+    "appId": "no.owner.home",
+    "productName": "Home",
+    "executableName": "home",
+    "artifactName": "Home-${version}-${arch}.${ext}",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist-electron/**",
+      "renderer/**",
+      "build/icon.png",
+      "package.json"
+    ],
+    "npmRebuild": false,
+    "asar": true,
+    "linux": {
+      "target": [
+        "AppImage",
+        "dir"
+      ],
+      "category": "Utility",
+      "icon": "build/icon.png",
+      "synopsis": "Smart home control",
+      "desktop": {
+        "entry": {
+          "StartupWMClass": "home",
+          "Name": "Home"
+        }
+      },
+      "syncDesktopName": true
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.lifestyle",
+      "icon": "build/icon.png",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Home uses the microphone for voice commands."
+      }
+    }
+  },
+  "desktopName": "home.desktop"
+}

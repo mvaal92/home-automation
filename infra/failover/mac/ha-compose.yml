@@ -1,0 +1,10 @@
+# HA standby on the Mac - ONLY started by `home-failover ha-start` / watchdog (omarchy HA down >10 min)
+name: ha-standby
+services:
+  homeassistant:
+    container_name: ha-standby
+    image: ghcr.io/home-assistant/home-assistant:stable
+    restart: "no"
+    ports: ["8123:8123"]
+    environment: [TZ=Europe/Oslo]
+    volumes: ["${HOME}/home-standby/ha-config:/config"]

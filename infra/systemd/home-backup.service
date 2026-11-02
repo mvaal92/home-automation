@@ -1,0 +1,5 @@
+[Unit]
+Description=Nightly Home backup -> Mac mini standby
+[Service]
+Type=oneshot
+ExecStart=/home/owner/home-automation/failover/home-backup.sh
